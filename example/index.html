@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>jQuery Spinner</title>
+    <!--[if lt IE 9]>
+    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../css/jquery.spinner.css" />
+    <script src="../javascript/jquery.spinner.js"></script>
+    <script>
+      $(function() {
+        $('.spinner').spinner();
+        $('.spinner_offset').spinner({
+          offsetTop: 9,
+          offsetLeft: -30,
+          autohide: false
+        });
+        $('.spinner_labels').spinner({
+          labels: {
+            top: 'Moar things!!!',
+            bottom: 'Less things....'
+          }
+        });
+      });
+    </script>
+    <style>
+      
+      input {
+        width: 100px
+      } 
+      
+      body {
+        font-family: sans-serif;
+        font-size: 10px
+      }
+
+      h1 {
+        font-size: 15px;
+        font-family: sans-serif;
+        margin-top: 20px;
+        padding-top: 20px;
+        padding-bottom: 10px;
+        border-top: solid 1px black;
+      }
+
+      .override .jQSpinner-controls div {
+        width: 40px;
+        height: 20px;
+      }
+
+      .offset input {
+        margin-left: 30px
+      }
+
+      .offset .jQSpinner-controls div {
+        width: 25px;
+        height: 15px;
+        line-height: 15px;
+        vertical-align: baseline;
+      }
+
+      .labels .jQSpinner-controls div {
+        font-size: 10px;
+        line-height: 10px;
+        height: 15px;
+        padding-top: 5px;
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <h1>Default Spinner</h1>
+    <input type="text" class="spinner" />
+
+    <h1>Stepping With Padding</h1>
+    <input type="text" class="spinner" data-min="0" data-pad="4" data-step="5" />
+
+    <h1>Min / Max Spinner</h1>
+    Looping: <input type="text" class="spinner" data-min="0" data-max="10" /> <br /><br /><br /><br />
+    Non-Looping: <input type="text" class="spinner" data-min="0" data-max="10" data-loop="false" />
+
+    <h1>CSS Override Controls</h1>
+    <div class="override">
+      <input type="text" class="spinner" />
+    </div>
+
+    <h1>Configurable Top / Left Offset</h1>
+    <div class="offset">
+      <input type="text" class="spinner_offset" />
+    </div>
+
+    <h1>Button Labels</h1>
+    <div class="labels">
+      <input type="text" class="spinner_labels" />
+    </div>
+
+
+
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+  </body>
+</html>
