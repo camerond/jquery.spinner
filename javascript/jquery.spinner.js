@@ -3,6 +3,8 @@
   $.fn.spinner = function(options) {
 
     var options = $.extend( {
+      namespace: 'jQSpinner',
+      forceNumber: true,
       min: null,
       max: null,
       step: 1,
@@ -27,15 +29,14 @@
     return this.each(function () {
 
       var $this     = $(this),
-      $controls     = $('<div />', { "class": "jQSpinner-controls" }).hide(),
+      $controls     = $('<div />', { "class": options.namespace + "-controls" }).hide(),
       $increment    = $('<div></div>', { "class": "up" }).text(options.labels.top),
       $decrement    = $('<div></div>', { "class": "down" }).text(options.labels.bottom),
-      min           = $this.attr('min')   !== undefined  ? parseInt($this.attr('min'), 10)   : $this.data('min')  !== undefined ? parseInt($this.data('min'), 10)  : options.min,
-      max           = $this.attr('max')   !== undefined  ? parseInt($this.attr('max'), 10)   : $this.data('max')  !== undefined ? parseInt($this.data('max'), 10)  : options.max,
-      step          = $this.attr('step')  !== undefined  ? parseInt($this.attr('step'), 10)  : $this.data('step') !== undefined ? parseInt($this.data('step'), 10) : options.step,
-      pad           = $this.data('pad')   !== undefined  ? parseInt($this.data('pad'), 10)   : options.pad,
-      loop          = ($this.data('loop') !== undefined  && $this.data('loop') === false) || (min == null || max === null) ? false : options.loop,
-      hideTimeout   = null,
+      min           = $this.attr('min')   !== undefined ? parseInt($this.attr('min'), 10)   : $this.data('min')  !== undefined ? parseInt($this.data('min'), 10)  : options.min,
+      max           = $this.attr('max')   !== undefined ? parseInt($this.attr('max'), 10)   : $this.data('max')  !== undefined ? parseInt($this.data('max'), 10)  : options.max,
+      step          = $this.attr('step')  !== undefined && $this.attr('step') != 'any' ? parseInt($this.attr('step'), 10)  : $this.data('step') !== undefined ? parseInt($this.data('step'), 10) : options.step,
+      pad           = $this.data('pad')   !== undefined ? parseInt($this.data('pad'), 10)   : options.pad,
+      loop          = ($this.data('loop') !== undefined && $this.data('loop') === false) || (min == null || max === null) ? false : options.loop,
       setState      = function () {
         $increment.removeClass('disabled').unbind('mouseup').bind('mouseup', increment);
         $decrement.removeClass('disabled').unbind('mouseup').bind('mouseup', decrement);
@@ -73,20 +74,20 @@
           $this.val(padZeros($this.val(), pad));
         }
 
-        $this.focus();
+        $this.trigger('focus.' + options.namespace);
       },
 
       decrement  = function () {
         increment(true);
       };
 
-      $increment.mousedown(function() { return false; }).mouseup(increment);
-      $decrement.mousedown(function() { return false; }).mouseup(decrement);
+      $increment.bind('mousedown.' + options.namespace, false).bind('mouseup.' + options.namespace, increment);
+      $decrement.bind('mousedown.' + options.namespace, false).bind('mouseup.' + options.namespace, decrement);
       $controls.append($increment);
       $controls.append($decrement);
       $this.parent().append($controls);
 
-      $this.keydown(function (e) {
+      $this.bind('keydown.' + options.namespace, function (e) {
         var actions = {
           "38": increment,
           "40": decrement
@@ -94,17 +95,19 @@
         if (e.keyCode in actions) { actions[e.keyCode](); }
       });
 
+      options.forceNumber && $this.bind('change.' + options.namespace + ' keyup.' + options.namespace, function () {
+        $this.val($this.val().replace(/[^0-9\-]/g, ''));
+      });
 
-      $this.focus(function () {
+      $this.bind('focus.' + options.namespace, function () {
         if ($controls.is('.active')) {
           return true;
         }
-        var left          = $this[0].offsetLeft,
-            top           = $this[0].offsetTop,
+        var left          = this.offsetLeft,
+            top           = this.offsetTop,
             height        = $this.outerHeight(),
-            width         = parseInt($increment.width(), 10) || $this.outerWidth(),
+            width         = $increment.width() || $this.outerWidth(),
             parentHeight  = $this.parent().height();
-
         $this.css({zIndex: 16});
 
         $increment.css({
@@ -123,7 +126,7 @@
         $controls.show().addClass('active');
       });
       if(options.autohide) {
-        $this.blur(function () {
+        $this.bind('blur.' + options.namespace, function () {
           $controls.hide().removeClass('active');
         });
       }
