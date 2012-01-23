@@ -20,10 +20,15 @@
     }, options);
 
     var padZeros = function(val, padding) {
+      var negative = '';
+      if(parseInt(val, 10) < 0) {
+        negative = '-';
+        val = Math.abs(parseInt(val, 10)) + '';
+      }
       while (val.length < padding) {
         val = '0' + val;
       }
-      return val;
+      return negative + val;
     }
 
     return this.each(function () {
