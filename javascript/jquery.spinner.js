@@ -16,7 +16,8 @@
       labels: {
         top: '+',
         bottom: '-'
-      }
+      },
+      dataList: null,
     }, options);
 
     var padZeros = function(val, padding) {
@@ -42,23 +43,27 @@
       step          = $this.attr('step')  !== undefined && $this.attr('step') != 'any' ? parseInt($this.attr('step'), 10)  : $this.data('step') !== undefined ? parseInt($this.data('step'), 10) : options.step,
       pad           = $this.data('pad')   !== undefined ? parseInt($this.data('pad'), 10)   : options.pad,
       loop          = ($this.data('loop') !== undefined && $this.data('loop') === false) || (min == null || max === null) ? false : options.loop,
+      dataList      = options.dataList,
+      index         = 0,
       setState      = function () {
         $increment.removeClass('disabled').unbind('mouseup').bind('mouseup', increment);
         $decrement.removeClass('disabled').unbind('mouseup').bind('mouseup', decrement);
-        max !== null && parseInt($this.val(), 10) >= max && $increment.addClass('disabled').unbind('mouseup');
-        min !== null && parseInt($this.val(), 10) <= min && $decrement.addClass('disabled').unbind('mouseup');
+        max !== null && $this.data('val') >= max && $increment.addClass('disabled').unbind('mouseup');
+        min !== null && $this.data('val') <= min && $decrement.addClass('disabled').unbind('mouseup');
       },
       increment     = function (decrement) {
         if(decrement === true) {
+          if(min !== null && $this.data('val') <= min) { return false; }
           $decrement.addClass('active');
         } else {
+          if(max !== null && $this.data('val') >= max) { return false; }
           $increment.addClass('active');
         }
         setTimeout(function () {
           $controls.find('div').removeClass('active');
         }, 100);
         var multiplier = (decrement === true) ? -1 : 1,
-            newVal = parseInt($this.val(), 10) + (step * multiplier);
+            newVal = $this.data('val') + (step * multiplier);
 
         if (newVal % step) {
           newVal -= newVal % step + step;
@@ -69,17 +74,23 @@
           } else if (min !== null && newVal < min) {
             newVal = max;
           }
-          $this.val(newVal);
+          $this.data('val', newVal);
         } else {
-          $this.val(newVal);
+          if(!dataList || dataList[newVal]) {
+            $this.data('val', newVal);
+          }
           setState();
         }
-        
-        if(pad) {
-          $this.val(padZeros($this.val(), pad));
-        }
-
+        setValue();
         $this.trigger('focus.' + options.namespace);
+      },
+
+      setValue = function () {
+        if(dataList) {
+          $this.val(dataList[$this.data('val')].value);
+        } else {
+          $this.val(padZeros($this.data('val'), pad));
+        }
       },
 
       decrement  = function () {
@@ -95,14 +106,31 @@
       $this.bind('keydown.' + options.namespace, function (e) {
         var actions = {
           "38": increment,
-          "40": decrement
+          "40": decrement,
+          "9" : function () {}
         };
-        if (e.keyCode in actions) { actions[e.keyCode](); }
+        if (e.keyCode in actions) { 
+          actions[e.keyCode](); 
+        } else {
+          return false;
+        }
       });
 
-      options.forceNumber && $this.bind('change.' + options.namespace + ' keyup.' + options.namespace, function () {
-        $this.val($this.val().replace(/[^0-9\-]/g, ''));
-      });
+      if($this.attr('list')) {
+        dataList = [];
+        $('datalist#' + $this.attr('list') + ' option').each(function () {
+          dataList.push({
+            value: $(this).attr('value') || $(this).text(),
+            label: $(this).text()
+          });
+        });
+        $this.attr('list', null);
+        min = 0;
+        max = dataList.length - 1;
+      } 
+      
+      $this.data('val', 0);
+      setValue();
 
       $this.bind('focus.' + options.namespace, function () {
         if ($controls.is('.active')) {
